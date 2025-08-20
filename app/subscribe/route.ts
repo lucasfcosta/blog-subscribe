@@ -22,12 +22,16 @@ export async function POST(request: Request): Promise<Response> {
     const confirmUrl = `${baseUrl}/confirm?token=${encodeURIComponent(subscriber.confirmationToken!)}`;
 
     const resend = new Resend(process.env.RESEND_API_KEY);
-    await resend.emails.send({
+    const { error: sendError } = await resend.emails.send({
       from: 'Lucas da Costa <newsletter@updates.lucasfcosta.com>',
       to: email,
       subject: 'Confirm your subscription',
       html: `Please confirm your subscription: <a href="${confirmUrl}">${confirmUrl}</a>`
     });
+
+    if (sendError) {
+      return new Response('Failed to send confirmation email', { status: 502 });
+    }
 
     return new Response('Subscribed. Check your email to confirm.', {
       status: 200,

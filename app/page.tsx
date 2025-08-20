@@ -6,6 +6,7 @@ export default function Page() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   async function handleSubscribe(e: React.FormEvent) {
     e.preventDefault();
@@ -19,6 +20,9 @@ export default function Page() {
       });
       const ok = res.ok;
       setStatus(ok ? "Check your email to confirm." : "Subscription failed.");
+      if (ok) {
+        setSubmitted(true);
+      }
     } catch {
       setStatus("Subscription failed.");
     } finally {
@@ -38,14 +42,15 @@ export default function Page() {
             placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20"
+            disabled={submitted}
+            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 disabled:bg-gray-100 disabled:text-gray-500"
           />
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || submitted}
             className="w-full rounded-md bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-black disabled:opacity-60"
           >
-            {loading ? "Subscribing..." : "Subscribe"}
+            {submitted ? "Email sent" : loading ? "Subscribing..." : "Subscribe"}
           </button>
         </form>
         {status && <p className="mt-3 text-center text-sm text-gray-700">{status}</p>}
