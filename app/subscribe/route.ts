@@ -12,11 +12,21 @@ export async function POST(request: Request): Promise<Response> {
 
     const token = crypto.randomUUID();
 
-    const subscriber = await prismaClient.subscriber.upsert({
-      where: { email },
-      create: { email, status: 'PENDING', confirmationToken: token },
-      update: { status: 'PENDING', confirmationToken: token },
-    });
+    console.log("Subscriber upsert attempt");
+
+    let subscriber;
+    try {
+      subscriber = await prismaClient.subscriber.upsert({
+        where: { email },
+        create: { email, status: 'PENDING', confirmationToken: token },
+        update: { status: 'PENDING', confirmationToken: token },
+      });
+    } catch (error) {
+      console.error("Error upserting subscriber:", error);
+      return new Response('Failed to upsert subscriber', { status: 500 });
+    }
+
+    console.log("Subscriber upserted:", subscriber);
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
     const confirmUrl = `${baseUrl}/confirm?token=${encodeURIComponent(subscriber.confirmationToken!)}`;
